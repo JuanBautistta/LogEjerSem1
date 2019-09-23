@@ -91,4 +91,33 @@ auxiliarListaTerminos [] _ = []
 auxiliarListaTerminos (x:xs) (c,t) = [sust_term x (c,t)] ++ (auxiliarListaTerminos xs (c,t))
 
 sust_form :: Pred -> Sub -> Pred
-sust_form p s = undefined 
+sust_form (Pr s lt) (st,t) = (Pr s (auxiliarListaTerminos lt (st,t)))
+sust_form (Neg p) (st,t) = Neg (sust_form p (st,t))
+sust_form (Conj p q) (st,t) = Conj (sust_form p (st,t)) (sust_form q (st,t))
+sust_form (Disj p q) (st,t) = Disj (sust_form p (st,t)) (sust_form q (st,t))
+sust_form (Imp p q) (st,t) = Imp (sust_form p (st,t)) (sust_form q (st,t))
+sust_form (Eqv p q) (st,t) = Eqv (sust_form p (st,t)) (sust_form q (st,t))
+sust_form (All s p) (st,t) = if(s==st)
+                             then (All s p)
+                             else if(distintosTerminos s t)
+                                  then All s (sust_form p (st,t))
+                                  else (sust_form (alfa_eq (All s p) (generaVar s (length s)) ) (st,t) )
+sust_form (Ex s p) (st,t) = if(s==st)
+                            then (Ex s p)
+                            else if(distintosTerminos s t)
+                                then Ex s (sust_form p (st,t))
+                                else (sust_form (alfa_eq (Ex s p) (generaVar s (length s)) ) (st,t) )
+--sust_form p s = undefined 
+
+generaVar :: String -> Int -> String
+generaVar s n = s++(show n)
+
+distintosTerminos :: String -> Term -> Bool
+distintosTerminos s (VarP st) = (st/=s)
+distintosTerminos s (Func st lt) = (auxDistintos s lt)
+
+auxDistintos :: String -> [Term] -> Bool
+auxDistintos _ [] = True
+auxDistintos s (x:xs) = (distintosTerminos s x) && (auxDistintos s xs)
+
+--sustForAux ::  
